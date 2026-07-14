@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RavenRoute — Administrator Board</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #111118;
+      --bg-tertiary: #1a1a24;
+      --bg-card: rgba(255, 255, 255, 0.04);
+      --bg-card-hover: rgba(255, 255, 255, 0.07);
+      --text-primary: #f0f0f5;
+      --text-secondary: rgba(240, 240, 245, 0.65);
+      --text-tertiary: rgba(240, 240, 245, 0.4);
+      --accent: #7c3aed;
+      --accent-light: #a78bfa;
+      --border: rgba(255, 255, 255, 0.06);
+      --border-med: rgba(255, 255, 255, 0.1);
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --font: 'Inter', sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: var(--font); background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; padding: 40px 24px; overflow-x: hidden; }
+    
+    header {
+      max-width: 1200px; margin: 0 auto 40px;
+      display: flex; justify-content: space-between; align-items: center;
+      padding-bottom: 24px; border-bottom: 1px solid var(--border);
+    }
+    header h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.02em; display: flex; align-items: center; gap: 10px; }
+    header h1 span { background: linear-gradient(135deg, #a78bfa, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .btn-back {
+      padding: 10px 18px; border-radius: var(--radius-md); background: var(--bg-card);
+      border: 1px solid var(--border); color: var(--text-secondary); text-decoration: none;
+      font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.2s;
+    }
+    .btn-back:hover { background: var(--bg-card-hover); color: var(--text-primary); border-color: var(--text-tertiary); }
+    
+    main { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 32px; }
+    
+    /* Metrics grid */
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+    .metric-card {
+      background: var(--bg-secondary); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 24px;
+      display: flex; flex-direction: column; gap: 6px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    .metric-title { font-size: 0.72rem; text-transform: uppercase; color: var(--text-tertiary); font-weight: 600; letter-spacing: 0.08em; }
+    .metric-value { font-size: 2rem; font-weight: 800; font-family: var(--mono); color: var(--text-primary); }
+    .metric-accent .metric-value { background: linear-gradient(135deg, #a78bfa, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+    /* Layout Sections */
+    .section-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+    @media (max-width: 1024px) { .section-grid { grid-template-columns: 1fr; } }
+    
+    .panel {
+      background: var(--bg-secondary); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 28px;
+      display: flex; flex-direction: column; gap: 20px;
+    }
+    .panel h2 { font-size: 1.2rem; font-weight: 800; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+    
+    /* Tables and list details */
+    .scroll-container { overflow-x: auto; max-height: 400px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-md); }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem; }
+    th, td { padding: 14px 18px; border-bottom: 1px solid var(--border); }
+    th { background: var(--bg-tertiary); color: var(--text-secondary); font-weight: 600; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.01); }
+    
+    .badge { padding: 3px 8px; border-radius: 100px; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; }
+    .badge-driver { background: rgba(124,58,237,0.15); color: var(--accent-light); }
+    .badge-customer { background: rgba(52,211,153,0.15); color: #34d399; }
+    .badge-status { font-family: var(--mono); }
+    .badge-pending { background: rgba(251,191,36,0.12); color: #fbbf24; }
+    .badge-active { background: rgba(59,130,246,0.15); color: #60a5fa; }
+    .badge-delivered { background: rgba(52,211,153,0.15); color: #34d399; }
+
+    .empty-state { text-align: center; color: var(--text-tertiary); padding: 40px; font-size: 0.9rem; }
+
+    @media (max-width: 600px) {
+      body { padding: 20px 12px; }
+      header { flex-direction: column; gap: 16px; text-align: center; }
+      .metrics-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+      .metric-card { padding: 16px; }
+      .metric-value { font-size: 1.5rem; }
+      th, td { padding: 10px 12px; font-size: 0.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🛡️ <span>Administrator Board</span></h1>
+    <a href="/" class="btn-back">⚙️ Portal Menu</a>
+  </header>
+
+  <main>
+    <!-- Key Analytics Overview -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <span class="metric-title">Total Deliveries</span>
+        <span class="metric-value" id="metric-total-deliv">0</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-title">Completed Drop-offs</span>
+        <span class="metric-value" id="metric-done-deliv" style="color:#34d399;">0</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-title">Registered Accounts</span>
+        <span class="metric-value" id="metric-total-accounts">0</span>
+      </div>
+      <div class="metric-card metric-accent">
+        <span class="metric-title">Active Drivers</span>
+        <span class="metric-value" id="metric-active-drivers">0</span>
+      </div>
+    </div>
+
+    <!-- Data Split Grids -->
+    <div class="section-grid">
+      
+      <!-- Accounts Panel -->
+      <div class="panel">
+        <h2>Users & Drivers Directory</h2>
+        <div class="scroll-container">
+          <table id="tbl-users">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Role</th>
+                <th>Detail</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Deliveries Status Panel -->
+      <div class="panel">
+        <h2>Live Deliveries Audit</h2>
+        <div class="scroll-container">
+          <table id="tbl-deliveries">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Status</th>
+                <th>Coordinates (Lat, Lng)</th>
+                <th>Package Info</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+    </div>
+
+    <!-- Customer Saved Locations Map/Coord Panel -->
+    <div class="panel" style="width: 100%;">
+      <h2>Saved Home Locations (Pins dropped)</h2>
+      <div class="scroll-container" style="max-height: 300px;">
+        <table id="tbl-locations">
+          <thead>
+            <tr>
+              <th>Customer Name</th>
+              <th>Phone Number</th>
+              <th>Home Coordinates</th>
+              <th>Address Link</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Populated dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Access validation check
+    if (sessionStorage.getItem('rr_admin_auth') !== 'true') {
+      alert('⛔ Access Denied. Admin passcode required.');
+      window.location.replace('/');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Load profiles and deliveries from localStore keys
+      let profiles = {};
+      try {
+        profiles = JSON.parse(localStorage.getItem('rr_profiles')) || {};
+      } catch(e) {}
+
+      let deliveries = [];
+      try {
+        deliveries = JSON.parse(localStorage.getItem('rr_deliveries')) || [];
+      } catch(e) {}
+
+      const accountsList = Object.values(profiles);
+
+      // 2. Compute Analytics Metric Stats
+      document.getElementById('metric-total-deliv').textContent = deliveries.length;
+      document.getElementById('metric-done-deliv').textContent = deliveries.filter(d => d.status === 'delivered').length;
+      document.getElementById('metric-total-accounts').textContent = accountsList.length;
+      document.getElementById('metric-active-drivers').textContent = accountsList.filter(u => u.role === 'driver').length;
+
+      // 3. Render Users Directory Table
+      const userTbody = document.getElementById('tbl-users').querySelector('tbody');
+      if (accountsList.length === 0) {
+        userTbody.innerHTML = `<tr><td colspan="4" class="empty-state">No users registered yet.</td></tr>`;
+      } else {
+        userTbody.innerHTML = accountsList.map(user => `
+          <tr>
+            <td><strong>${user.name || 'Anonymous'}</strong></td>
+            <td style="font-family:var(--mono);">${user.phone}</td>
+            <td><span class="badge ${user.role === 'driver' ? 'badge-driver' : 'badge-customer'}">${user.role}</span></td>
+            <td style="font-size:0.8rem;color:var(--text-secondary);">
+              ${user.role === 'driver' ? `🚲 ${user.vehicle || '--'}` : `🏠 ${user.address ? 'Saved' : 'None Set'}`}
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      // 4. Render Live Deliveries Audit Table
+      const delivTbody = document.getElementById('tbl-deliveries').querySelector('tbody');
+      if (deliveries.length === 0) {
+        delivTbody.innerHTML = `<tr><td colspan="5" class="empty-state">No deliveries created yet.</td></tr>`;
+      } else {
+        delivTbody.innerHTML = deliveries.map(d => `
+          <tr>
+            <td style="font-family:var(--mono);font-weight:700;color:var(--accent-light);">${d.id}</td>
+            <td>${d.customer || 'Unknown'}</td>
+            <td><span class="badge badge-status badge-${d.status}">${d.status}</span></td>
+            <td style="font-family:var(--mono);color:var(--text-secondary);font-size:0.8rem;">
+              ${(d.lat && d.lng) ? `${parseFloat(d.lat).toFixed(5)}, ${parseFloat(d.lng).toFixed(5)}` : '--'}
+            </td>
+            <td>${d.package ? `${d.package.icon || '📦'} ${d.package.description} (${d.package.weight || '--'})` : '--'}</td>
+          </tr>
+        `).join('');
+      }
+
+      // 5. Render Saved Home Coordinates locations table
+      const locTbody = document.getElementById('tbl-locations').querySelector('tbody');
+      const savedHomeProfiles = accountsList.filter(u => u.role === 'customer' && u.lat && u.lng);
+      if (savedHomeProfiles.length === 0) {
+        locTbody.innerHTML = `<tr><td colspan="4" class="empty-state">No customer has set their home pin location coordinate details.</td></tr>`;
+      } else {
+        locTbody.innerHTML = savedHomeProfiles.map(u => `
+          <tr>
+            <td><strong>${u.name}</strong></td>
+            <td style="font-family:var(--mono);">${u.phone}</td>
+            <td style="font-family:var(--mono);color:var(--accent-light);">${u.lat.toFixed(6)}, ${u.lng.toFixed(6)}</td>
+            <td>
+              <a href="https://www.openstreetmap.org/?mlat=${u.lat}&mlon=${u.lng}&zoom=16" 
+                 target="_blank" style="color:#60a5fa;font-size:0.82rem;text-decoration:none;font-weight:600;">
+                 🌍 Open Map Location
+              </a>
+            </td>
+          </tr>
+        `).join('');
+      }
+    });
+  </script>
+</body>
+</html>

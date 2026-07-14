@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RavenRoute — Driver</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  
+  <link rel="stylesheet" href="/src/shared/shared.css">
+  <link rel="stylesheet" href="/src/driver/style.css">
+</head>
+<body>
+  
+  <!-- AUTH VIEW -->
+  <div id="view-auth" class="view active">
+    <div class="auth-container">
+      <div class="auth-card">
+        <div class="brand">
+          <span class="brand-icon">🐦</span>
+          <h1><span class="brand-raven">Raven</span><span class="brand-route">Route</span></h1>
+          <p class="brand-tagline">Driver App</p>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form" class="auth-form">
+          <h2>Driver Login</h2>
+          <input type="tel" id="login-phone" placeholder="Phone Number" required>
+          <input type="password" id="login-password" placeholder="Password" required>
+          <button type="submit" class="btn-primary">Sign In</button>
+          <p class="auth-switch">New driver? <a href="#" id="show-register">Register here</a></p>
+        </form>
+
+        <!-- Register Form -->
+        <form id="register-form" class="auth-form hidden">
+          <h2>Driver Registration</h2>
+          <input type="text" id="register-name" placeholder="Full Name" required>
+          <input type="tel" id="register-phone" placeholder="Phone Number" required>
+          <input type="password" id="register-password" placeholder="Password" required>
+          <select id="register-vehicle" required>
+            <option value="" disabled selected>Select Vehicle Type</option>
+            <option value="Bicycle">🚲 Bicycle</option>
+            <option value="Motorcycle">🏍️ Motorcycle</option>
+            <option value="Car">🚗 Car</option>
+            <option value="Van">🚐 Van</option>
+            <option value="Truck">🚚 Truck</option>
+          </select>
+          <button type="submit" class="btn-primary">Register as Driver</button>
+          <p class="auth-switch">Already registered? <a href="#" id="show-login">Sign in</a></p>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP VIEW -->
+  <div id="view-main" class="view">
+    
+    <!-- Start Location Overlay -->
+    <div class="start-location-overlay" id="start-location-overlay">
+      <div class="start-location-card">
+        <div class="sl-icon">🚩</div>
+        <h3>Set Your Start Location</h3>
+        <p>Where are you starting your route from?</p>
+        <button class="btn-geo" id="btn-start-current">📍 Use My Current Location</button>
+        <span class="geo-status" id="start-geo-status"></span>
+        <div class="sl-divider"><span>or</span></div>
+        <button class="btn-map-pick" id="btn-start-pick-map">🗺️ Pick on Map</button>
+      </div>
+    </div>
+
+    <!-- Map Pick Banner -->
+    <div class="map-pick-banner hidden" id="map-pick-banner">
+      <span>📌</span> Tap on the map to set your start location
+    </div>
+
+    <!-- Add Delivery Manual Overlay (Hidden by default) -->
+    <div class="map-pick-banner hidden" id="add-delivery-banner">
+      <span>📌</span> Tap on the map to drop the delivery pin
+    </div>
+
+    <div class="driver-layout">
+      <!-- Sidebar -->
+      <div class="driver-sidebar" id="driver-sidebar">
+        <!-- Header -->
+        <div class="sidebar-header">
+          <div class="sidebar-brand">🐦 <span>RavenRoute</span> Driver</div>
+          <div class="topbar-actions">
+            <button id="theme-toggle" class="icon-btn" title="Toggle theme">🌓</button>
+            <button id="btn-logout" class="btn-signout">Sign Out</button>
+          </div>
+        </div>
+
+        <!-- Driver Profile -->
+        <div class="driver-profile">
+          <div class="driver-avatar" id="driver-avatar">🧑‍✈️</div>
+          <div class="driver-info">
+            <strong id="driver-name">--</strong>
+            <span id="driver-vehicle">--</span>
+          </div>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+          <div class="stat-mini">
+            <span class="stat-mini-val" id="stat-completed">0</span>
+            <span class="stat-mini-label">Done</span>
+          </div>
+          <div class="stat-mini">
+            <span class="stat-mini-val" id="stat-pending">0</span>
+            <span class="stat-mini-label">Pending</span>
+          </div>
+          <div class="stat-mini">
+            <span class="stat-mini-val" id="stat-distance">--</span>
+            <span class="stat-mini-label">km Total</span>
+          </div>
+        </div>
+
+        <!-- Start Location Display -->
+        <div class="start-display hidden" id="start-display">
+          <span class="start-flag">🚩</span>
+          <div class="start-info">
+            <strong>Start Location</strong>
+            <span id="start-coords">--</span>
+          </div>
+          <button id="btn-change-start" class="btn-text" style="margin-left:auto;color:var(--accent-light);font-weight:600;font-size:0.75rem;">Change</button>
+        </div>
+
+        <!-- Route Actions -->
+        <div class="route-actions">
+          <button class="btn-optimize" id="btn-optimize" disabled>
+            <span>🧠</span> Optimize Route
+          </button>
+          <button class="btn-start-route" id="btn-start-route" disabled>
+            <span>▶️</span> Start Route
+          </button>
+        </div>
+
+        <!-- Delivery List -->
+        <div class="delivery-list-header">
+          <h3>Deliveries</h3>
+          <div class="list-actions">
+             <button id="btn-add-delivery" class="btn-text">+ Add Manual</button>
+             <span class="delivery-count" id="delivery-count">0 stops</span>
+          </div>
+        </div>
+        <div class="delivery-list" id="delivery-list">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Map Area -->
+      <div class="driver-map-area">
+        <div id="driver-map" class="full-map"></div>
+        <button id="btn-driver-track" class="btn-locate btn-track-driver" title="Track Position">🏍️</button>
+        <button id="btn-driver-locate" class="btn-locate" title="Find My Location">🎯</button>
+        
+        <!-- Route Info Overlay (Active Route) -->
+        <div class="route-info-overlay hidden" id="route-info-overlay">
+          <div class="route-info-card">
+            <div class="ri-stat">
+              <span class="ri-label">Next Stop</span>
+              <span class="ri-value" id="ri-next-stop">--</span>
+            </div>
+            <div class="ri-stat">
+              <span class="ri-label">Distance</span>
+              <span class="ri-value" id="ri-distance">--</span>
+            </div>
+            <div class="ri-stat">
+              <span class="ri-label">ETA</span>
+              <span class="ri-value" id="ri-eta">--</span>
+            </div>
+            <button id="btn-show-qr-trigger" class="btn-qr-trigger hidden">🔑 Show QR</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR Modal (Proof of Delivery) -->
+  <div class="qr-modal hidden" id="qr-modal">
+    <div class="qr-modal-content">
+      <div class="qr-modal-header">
+        <h3>Proof of Delivery</h3>
+        <button class="qr-close" id="qr-close">✕</button>
+      </div>
+      <div class="qr-modal-body">
+        <div class="qr-delivery-info">
+          <span class="qr-order-id" id="qr-order-id">--</span>
+          <strong class="qr-customer" id="qr-customer">--</strong>
+        </div>
+        <div class="qr-code-container" id="qr-code-container">
+          <!-- Canvas generated here -->
+        </div>
+        <p class="qr-instruction">Customer must scan this QR code to confirm receipt.</p>
+        <button class="btn-confirm-delivery" id="btn-confirm-delivery">
+          ✅ Mark as Delivered
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manual Add Modal -->
+  <div id="manual-add-modal" class="modal hidden">
+    <div class="modal-content">
+      <button class="modal-close" id="manual-add-close">✕</button>
+      <h3>Manual Delivery</h3>
+      <p class="subtitle">Location: <span id="manual-loc-display">--</span></p>
+      <form id="manual-add-form">
+        <input type="text" id="manual-customer" placeholder="Customer Name (Optional)">
+        <input type="text" id="manual-desc" placeholder="Goods Description (Optional)">
+        <input type="text" id="manual-weight" placeholder="Weight e.g. 2kg (Optional)">
+        <button type="submit" class="btn-primary">Add Delivery</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script type="module" src="/src/driver/main.js"></script>
+</body>
+</html>

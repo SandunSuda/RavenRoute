@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RavenRoute — Select Portal</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --card: rgba(255, 255, 255, 0.05);
+      --card-hover: rgba(255, 255, 255, 0.08);
+      --text: #f0f0f5;
+      --text-dim: rgba(240, 240, 245, 0.6);
+      --border: rgba(255, 255, 255, 0.08);
+      --accent: #7c3aed;
+      --accent-dim: rgba(124, 58, 237, 0.15);
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+    .container { max-width: 800px; padding: 40px; text-align: center; }
+    .brand { margin-bottom: 64px; }
+    .icon { font-size: 4rem; display: block; margin-bottom: 16px; }
+    h1 { font-size: 3rem; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 8px; }
+    .highlight { background: linear-gradient(135deg, #a78bfa 0%, #60a5fa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    p { font-size: 1.1rem; color: var(--text-dim); margin-bottom: 40px; }
+    
+    .portals { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; }
+    .portal-card {
+      flex: 1; min-width: 280px;
+      padding: 40px; border-radius: var(--radius-xl);
+      background: var(--card); border: 1px solid var(--border);
+      text-decoration: none; color: inherit;
+      transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+    }
+    .portal-card:hover { transform: translateY(-8px); background: var(--card-hover); border-color: var(--accent); box-shadow: 0 24px 64px rgba(124, 58, 237, 0.2); }
+    .portal-icon { font-size: 4rem; margin-bottom: 24px; }
+    .portal-card h2 { font-size: 1.8rem; margin-bottom: 12px; }
+    .portal-card p { font-size: 0.95rem; margin-bottom: 0; }
+
+    /* Admin Button in Corner */
+    .admin-trigger {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      z-index: 100;
+    }
+    .admin-trigger:hover {
+      color: var(--text);
+      border-color: var(--accent);
+      background: var(--card-hover);
+      transform: rotate(45deg) scale(1.05);
+    }
+
+    /* Passcode Modal Overlay */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 200;
+      opacity: 0; visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    .modal-overlay.active {
+      opacity: 1; visibility: visible;
+    }
+    .modal-content {
+      background: #111118;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      width: 90%; max-width: 320px;
+      text-align: center;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    }
+    .modal-content h3 { font-size: 1.2rem; margin-bottom: 8px; }
+    .modal-content p { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 20px; }
+    .modal-content input {
+      width: 100%; padding: 12px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: white; font-size: 1.1rem;
+      text-align: center; letter-spacing: 0.3em;
+      margin-bottom: 16px;
+      outline: none;
+    }
+    .modal-content input:focus { border-color: var(--accent); }
+    .modal-buttons { display: flex; gap: 12px; }
+    .btn { flex: 1; padding: 10px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; border: none; }
+    .btn-cancel { background: var(--card); color: var(--text-dim); }
+    .btn-cancel:hover { background: var(--card-hover); }
+    .btn-submit { background: var(--accent); color: white; }
+    .btn-submit:hover { opacity: 0.9; }
+
+    @media (max-width: 480px) {
+      body { padding: 20px 12px; }
+      h1 { font-size: 2.2rem; }
+      .container { padding: 20px 10px; }
+      .portal-card { padding: 24px; min-width: 200px; }
+      .brand { margin-bottom: 32px; }
+      .admin-trigger { bottom: 16px; right: 16px; width: 40px; height: 40px; font-size: 1.1rem; }
+    }
+  </style>
+</head>
+<body>
+  
+  <div class="container">
+    <div class="brand">
+      <span class="icon">🐦</span>
+      <h1>Raven<span class="highlight">Route</span></h1>
+      <p>Hyper-Precise Logistics Platform</p>
+    </div>
+    
+    <div class="portals">
+      <a href="/customer.html" class="portal-card" target="_blank">
+        <div class="portal-icon">📦</div>
+        <h2>Customer Portal</h2>
+        <p>Send packages, track couriers in real-time, and view delivery history.</p>
+      </a>
+      
+      <a href="/driver.html" class="portal-card" target="_blank">
+        <div class="portal-icon">🧑‍✈️</div>
+        <h2>Driver App</h2>
+        <p>Manage deliveries, optimize routes, and execute drop-offs with QR proof.</p>
+      </a>
+    </div>
+  </div>
+
+  <!-- Admin Trigger -->
+  <button class="admin-trigger" id="admin-trigger" title="Administrator Board">⚙️</button>
+
+  <!-- Password Modal -->
+  <div class="modal-overlay" id="passcode-overlay">
+    <div class="modal-content">
+      <h3>Admin Access</h3>
+      <p>Please enter the 4-digit administrator passcode</p>
+      <input type="password" id="admin-passcode" maxlength="4" placeholder="••••" autocomplete="off" />
+      <div class="modal-buttons">
+        <button class="btn btn-cancel" id="btn-pass-cancel">Cancel</button>
+        <button class="btn btn-submit" id="btn-pass-submit">Access</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const trigger = document.getElementById('admin-trigger');
+    const overlay = document.getElementById('passcode-overlay');
+    const input   = document.getElementById('admin-passcode');
+    const cancel  = document.getElementById('btn-pass-cancel');
+    const submit  = document.getElementById('btn-pass-submit');
+
+    trigger.addEventListener('click', () => {
+      overlay.classList.add('active');
+      input.value = '';
+      input.focus();
+    });
+
+    cancel.addEventListener('click', () => {
+      overlay.classList.remove('active');
+    });
+
+    submit.addEventListener('click', verifyPasscode);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') verifyPasscode();
+    });
+
+    function verifyPasscode() {
+      if (input.value === '1234') {
+        sessionStorage.setItem('rr_admin_auth', 'true');
+        overlay.classList.remove('active');
+        window.open('/admin.html', '_blank');
+      } else {
+        alert('❌ Incorrect administrator passcode.');
+        input.value = '';
+        input.focus();
+      }
+    }
+  </script>
+</body>
+</html>

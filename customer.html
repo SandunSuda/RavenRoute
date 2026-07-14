@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RavenRoute — Customer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="stylesheet" href="/src/shared/shared.css">
+  <link rel="stylesheet" href="/src/customer/style.css">
+</head>
+<body>
+
+  <!-- AUTH VIEW -->
+  <div id="view-auth" class="view active">
+    <div class="auth-container">
+      <div class="auth-card">
+        <div class="brand">
+          <span class="brand-icon">🐦</span>
+          <h1><span class="brand-raven">Raven</span><span class="brand-route">Route</span></h1>
+          <p class="brand-tagline">Customer Portal</p>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form" class="auth-form">
+          <h2>Welcome Back</h2>
+          <input type="tel" id="login-phone" placeholder="Phone Number" required>
+          <input type="password" id="login-password" placeholder="Password" required>
+          <button type="submit" class="btn-primary">Sign In</button>
+          <p class="auth-switch">New here? <a href="#" id="show-register">Create an account</a></p>
+        </form>
+
+        <!-- Register Form -->
+        <form id="register-form" class="auth-form hidden">
+          <h2>Create Account</h2>
+          <input type="text" id="register-name" placeholder="Full Name" required>
+          <input type="tel" id="register-phone" placeholder="Phone Number" required>
+          <input type="password" id="register-password" placeholder="Password" required>
+          <button type="submit" class="btn-primary">Register</button>
+          <p class="auth-switch">Already have an account? <a href="#" id="show-login">Sign in</a></p>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP VIEW -->
+  <div id="view-main" class="view">
+    <div class="customer-layout">
+      
+      <!-- LEFT SIDEBAR -->
+      <div class="customer-sidebar" id="customer-sidebar">
+        <!-- Sidebar Header (former topbar contents) -->
+        <div class="sidebar-header">
+          <div class="sidebar-brand">🐦 <span>RavenRoute</span></div>
+          <div class="topbar-actions">
+            <button id="btn-topbar-home" class="btn-home-topbar" title="Set Home Address">🏠 Set Home</button>
+            <button id="btn-topbar-create" class="btn-primary-sm" title="Create Delivery">+ Request</button>
+            <button id="theme-toggle" class="icon-btn" title="Toggle theme">🌓</button>
+            <div class="profile-menu-trigger" id="profile-trigger">
+              <span id="user-avatar-mini">👤</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar Body (former panel contents) -->
+        <div class="sidebar-body">
+          
+          <!-- Pre-dispatch section -->
+          <div class="panel-section" id="panel-predispatch">
+            <div class="panel-empty">
+              <span>📦</span>
+              <p>Ready to send a package?</p>
+              <p class="subtitle" style="font-size: 0.8rem; color: var(--text-tertiary);">Click the "+ Request" button at the top to start.</p>
+            </div>
+          </div>
+
+          <!-- Active Deliveries List (multiple) -->
+          <div class="panel-section hidden" id="panel-deliveries">
+            <div class="active-deliveries-header">
+              <strong>My Active Deliveries</strong>
+            </div>
+            <div id="active-deliveries-list"></div>
+          </div>
+
+          <!-- Tracking details (single delivery) -->
+          <div class="panel-section hidden" id="panel-tracking">
+            <div class="order-header">
+              <div class="order-id-wrap">
+                <button class="btn-back-list" id="btn-back-to-list">← Back</button>
+                <span class="order-id" id="track-order-id">--</span>
+              </div>
+              <div class="order-status-badge status-dispatching" id="track-status-badge">
+                <span class="status-dot"></span> <span id="track-status-text">Dispatching</span>
+              </div>
+            </div>
+
+            <!-- Driver Info Dashboard -->
+            <div class="tracking-dashboard">
+              <div class="td-left">
+                <div class="td-avatar" id="track-courier-avatar">🧑‍✈️</div>
+                <div class="td-courier-info">
+                  <strong id="track-courier-name">Waiting for driver</strong>
+                  <span id="track-courier-vehicle">--</span>
+                </div>
+              </div>
+              <div class="td-right">
+                <span class="eta-label">ETA</span>
+                <span class="eta-value" id="track-eta">-- min</span>
+              </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="delivery-progress">
+              <div class="progress-track">
+                <div class="progress-fill" id="track-progress-fill"></div>
+              </div>
+              <div class="progress-stats">
+                <span id="track-distance">-- km remaining</span>
+                <span id="track-completion">0% complete</span>
+              </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="status-timeline">
+              <div class="timeline-step active">
+                <div class="step-dot"></div>
+                <div class="step-info"><strong>Dispatching</strong><span>Assigning a courier</span></div>
+              </div>
+              <div class="timeline-step">
+                <div class="step-dot"></div>
+                <div class="step-info"><strong>In Transit</strong><span>Courier is on the way</span></div>
+              </div>
+              <div class="timeline-step">
+                <div class="step-dot"></div>
+                <div class="step-info"><strong>Arriving</strong><span>Courier is nearby</span></div>
+              </div>
+              <div class="timeline-step">
+                <div class="step-dot"></div>
+                <div class="step-info"><strong>Delivered</strong><span>Package dropped off</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Delivered Confirmation screen -->
+          <div class="panel-section hidden" id="panel-delivered">
+            <div class="delivered-card">
+              <div class="delivered-icon">✅</div>
+              <h3>Delivered!</h3>
+              <div class="delivered-time" id="delivered-time">--</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- RIGHT MAP AREA -->
+      <div class="customer-map-area">
+        <div id="customer-map" class="full-map"></div>
+        <button id="btn-customer-track" class="btn-locate btn-track-driver" title="Track Driver">🏍️</button>
+        <button id="btn-customer-locate" class="btn-locate" title="Find My Location">🎯</button>
+      </div>
+
+    </div>
+
+    <!-- Profile Details Modal -->
+    <div id="profile-modal" class="modal hidden">
+      <div class="modal-content">
+        <button class="modal-close" id="profile-close">✕</button>
+        <h3>Your Profile</h3>
+        <div class="profile-details">
+          <div class="profile-avatar-large" id="profile-avatar">👤</div>
+          <strong id="profile-name">Name</strong>
+          <span id="profile-phone">Phone</span>
+          <p id="profile-address" class="profile-address-text">No home address saved</p>
+        </div>
+        <button id="btn-save-home" class="btn-secondary" style="margin-bottom:8px;">📍 Save Home Address</button>
+        <button id="btn-logout" class="btn-secondary">Log Out</button>
+      </div>
+    </div>
+
+    <!-- Home Address Modal -->
+    <div id="home-address-modal" class="modal hidden">
+      <div class="modal-content">
+        <button class="modal-close" id="home-address-close">✕</button>
+        <h3>Save Home Address</h3>
+        <p class="subtitle">Tap the map to pin your home location</p>
+        <div id="home-address-map" style="height:240px;border-radius:12px;overflow:hidden;margin:12px 0;"></div>
+        <p id="home-address-coords" class="subtitle" style="font-family:var(--mono);font-size:0.75rem;">No pin set yet</p>
+        <button id="btn-confirm-home" class="btn-primary" disabled>Save Location</button>
+      </div>
+    </div>
+
+    <!-- Create Delivery Overlay (hidden by default) -->
+    <div class="create-delivery-overlay hidden" id="create-delivery-overlay">
+      <button class="btn-geo" id="btn-use-location">📍 Use My Location</button>
+      <span class="geo-divider">or tap the map to pin</span>
+      <span class="geo-status" id="geo-status"></span>
+    </div>
+
+    <!-- Create Delivery Form Modal -->
+    <div id="create-form-modal" class="modal hidden">
+      <div class="modal-content">
+        <button class="modal-close" id="create-close">✕</button>
+        <h3>New Delivery</h3>
+        <p class="subtitle">Drop-off: <span id="create-loc-display" style="font-family:var(--mono);font-size:0.78rem;">--</span></p>
+        <form id="create-delivery-form">
+          <input type="text" id="create-receiver" placeholder="Receiver Name (Optional)">
+          <input type="text" id="create-desc" placeholder="Goods Description (Optional)">
+          <input type="text" id="create-weight" placeholder="Weight e.g. 2kg (Optional)">
+          
+          <!-- Show home address option if saved -->
+          <div id="home-addr-option" class="home-addr-option hidden">
+            <button type="button" id="btn-use-home-addr" class="btn-home-addr">🏠 Use My Home Address Instead</button>
+          </div>
+          <!-- Show save home option if NOT saved -->
+          <div id="save-current-as-home-option" class="home-addr-option hidden">
+            <button type="button" id="btn-save-current-as-home" class="btn-home-addr" style="background: rgba(124, 58, 237, 0.1); border-color: rgba(124, 58, 237, 0.3) !important; color: var(--accent-light);">🏠 Save Pinned Location as Home</button>
+          </div>
+          <button type="submit" class="btn-primary">Request Courier</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script type="module" src="/src/customer/main.js"></script>
+</body>
+</html>
