@@ -436,3 +436,12 @@ input, select { font-family: var(--font); }
   display: flex; align-items: center; gap: 8px; transition: all 0.3s var(--ease);
 }
 .map-pick-banner.hidden { opacity: 0; transform: translateX(-50%) translateY(-10px); pointer-events: none; }
+
+/* Responsive utility classes */
+.mobile-txt { display: none; }
+.full-txt { display: inline; }
+
+@media (max-width: 480px) {
+  .full-txt { display: none !important; }
+  .mobile-txt { display: inline !important; }
+}
