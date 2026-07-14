@@ -5,13 +5,13 @@
 /* Layout structure */
 .customer-layout {
   display: flex;
-  height: 100vh;
+  height: 100dvh;
   width: 100vw;
 }
 
 .customer-sidebar {
   width: 400px;
-  height: 100vh;
+  height: 100dvh;
   background: var(--bg-secondary);
   border-right: 1px solid var(--border);
   display: flex;
@@ -59,7 +59,7 @@
 .customer-map-area {
   flex: 1;
   position: relative;
-  height: 100vh;
+  height: 100dvh;
 }
 
 #view-main #customer-map {
@@ -292,9 +292,9 @@
 
 /* Responsive sidebar */
 @media (max-width: 860px) {
-  .customer-layout { flex-direction: column; }
-  .customer-sidebar { width: 100%; height: 50vh; border-right: none; border-bottom: 1px solid var(--border); }
-  .customer-map-area { height: 50vh; }
+  .customer-layout { flex-direction: column; height: 100dvh; }
+  .customer-sidebar { width: 100%; height: 50dvh; border-right: none; border-bottom: 1px solid var(--border); }
+  .customer-map-area { height: 50dvh; }
   .btn-locate { bottom: 16px; }
   .btn-track-driver { bottom: 68px !important; }
 }
